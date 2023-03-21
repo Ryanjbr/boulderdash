@@ -1,0 +1,36 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "tileset.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "tileset.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 482.6666666666667,
+                "y": 280
+            }
+        },
+        "tileset.tmx#tileset": {
+            "scaleInDock": 0.33
+        }
+    },
+    "last.exportedFilePath": "C:/wamp64/www/game1/src/assets",
+    "last.imagePath": "C:/wamp64/www/game1/src/assets",
+    "map.height": 24,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 56,
+    "openFiles": [
+        "tileset.tmx"
+    ],
+    "project": "tileset.tiled-project",
+    "recentFiles": [
+        "tileset.tmx"
+    ],
+    "tileset.embedInMap": true
+}
