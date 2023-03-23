@@ -7,6 +7,10 @@ export class SceneMain extends Phaser.Scene {
         this.moveTimer = 0;
         this.movementPossible = false;
         this.cursors = this.input.keyboard.createCursorKeys();
+        this.goalPos = 0;
+        this.text = this.add.text(10,10, 'debug');
+        this.moveType = '';
+        this.goalReached = true;
     }
 
     preload() {
@@ -26,12 +30,17 @@ export class SceneMain extends Phaser.Scene {
         const map = this.make.tilemap({ key: 'tilemap'});
         const tileset = map.addTilesetImage('tileset', 'tiles')
         
-        map.createLayer('dirt', tileset);
-        map.createLayer('blocks', tileset);
-        map.createLayer('boulders', tileset);
+        const dirt = map.createLayer('dirt', tileset);
+        const blocks = map.createLayer('blocks', tileset);
+        map.setCollisionBetween(461,461);
+        const boulders = map.createLayer('boulders', tileset);
 
-        this.player = this.physics.add.staticSprite(32, 32, 'guy').setOrigin(0, 0);
+
+        this.player = this.physics.add.sprite(32, 32, 'guy').setOrigin(0, 0);
         this.player.setScale(.5);
+
+        this.physics.add.collider(this.player, blocks)
+
 
         this.moveTimer = 0;
         this.movementPossible = false;
@@ -45,42 +54,117 @@ export class SceneMain extends Phaser.Scene {
             frames: [{ key: 'guy', frame: 27 }],
             frameRate: 20
         }); 
+
     };
     
     update(time, delta) {
+/*         this.text.destroy();
+        this.text = this.add.text(10, 10, `
+            x: ${this.player.body.x},
+            y: ${this.player.body.y},
+            velocity: ${this.player.body.velocity},
+            lastPlayerX: ${this.lastPlayerX},
+        `); */
         this.player.anims.play('idle', true)
-
+        if (this.moveType === 'left' && this.player.body.x <= this.goalPos || this.moveType === 'right' && this.player.body.x >= this.goalPos) {
+            this.player.body.setVelocity(0);
+            this.player.body.x = this.goalPos;
+            this.moveTimer = 0;
+            this.movementPossible = false;
+            this.moveType = '';
+            this.goalPos = 0;
+            this.goalReached = true;
+        }
+        if (this.moveType === 'up' && this.player.body.y <= this.goalPos || this.moveType === 'down' && this.player.body.y >= this.goalPos) {
+            this.player.body.setVelocity(0);
+            this.player.body.y = this.goalPos;
+            this.moveTimer = 0;
+            this.movementPossible = false;
+            this.moveType = '';
+            this.goalPos = 0;
+            this.goalReached = true;
+        }
+        if (this.moveType === 'left' && this.moveTimer > 800) {
+            this.player.body.setVelocity(0);
+            this.player.body.x = this.goalPos + 32;
+            this.movementPossible = true;
+            this.moveTimer = 0;
+            this.moveType = '';
+            this.goalPos = 0;
+            this.goalReached = true;
+        }
+        if (this.moveType === 'right' && this.moveTimer > 800) {
+            this.player.body.setVelocity(0);
+            this.player.body.x = this.goalPos - 32;
+            this.movementPossible = true;
+            this.moveTimer = 0;
+            this.moveType = '';
+            this.goalPos = 0;
+            this.goalReached = true;
+        }
+        if (this.moveType === 'up' && this.moveTimer > 800) {
+            this.player.body.setVelocity(0);
+            this.player.body.y = this.goalPos + 32;
+            this.movementPossible = true;
+            this.moveTimer = 0;
+            this.moveType = '';
+            this.goalPos = 0;
+            this.goalReached = true;
+        }
+        if (this.moveType === 'down' && this.moveTimer > 800) {
+            this.player.body.setVelocity(0);
+            this.player.body.y = this.goalPos - 32;
+            this.movementPossible = true;
+            this.moveTimer = 0;
+            this.moveType = '';
+            this.goalPos = 0;
+            this.goalReached = true;
+        }
         
     
         this.moveTimer += delta;
-        if (this.moveTimer > 500) {
+        if (this.moveTimer > 400 && this.goalReached === true) {
             this.movementPossible = true;
         }
     
         // moves player 32 px at a time along given tiles
         if (this.cursors.left.isDown && this.movementPossible === true) {
-            this.player.x -= 32;
-            this.moveTimer = 0;
+            this.goalPos = this.player.body.x - 32;
+            this.player.body.setVelocityX(-300)
+            this.moveType = 'left'
             this.movementPossible = false;
+            this.goalReached = false;
         }
     
         else if (this.cursors.right.isDown && this.movementPossible === true) {
-            this.player.x += 32;
-            this.moveTimer = 0;
+            this.goalPos = this.player.body.x + 32;
+            this.player.body.setVelocityX(300)
+            this.moveType = 'right'
             this.movementPossible = false;
+            this.goalReached = false;
         }
     
         else if (this.cursors.up.isDown && this.movementPossible === true) {
-            this.player.y -= 32;
-            this.moveTimer = 0;
+            this.goalPos = this.player.body.y - 32;
+            this.player.body.setVelocityY(-300)
+            this.moveType = 'up'
             this.movementPossible = false;
+            this.goalReached = false;
         }
     
         else if (this.cursors.down.isDown && this.movementPossible === true) {
-            this.player.y += 32;
-            this.moveTimer = 0;
+            this.goalPos = this.player.body.y + 32;
+            this.player.body.setVelocityY(300)
+            this.moveType = 'down'
             this.movementPossible = false;
+            this.goalReached = false;
         }
     };
+
+    movePlayer(direction, currentPlayerX, currentPlayerY) {
+        if (direction === "left") {
+
+        }
+    }
 }
 export default SceneMain;
