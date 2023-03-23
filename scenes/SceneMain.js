@@ -11,13 +11,17 @@ export class SceneMain extends Phaser.Scene {
         this.text = this.add.text(10,10, 'debug');
         this.moveType = '';
         this.goalReached = true;
+        this.boulders = this.physics.add.group()
+        this.boulderLocations = [[4,17], [4,16], [8,5], [8,15]]
+        this.GRID_SIZE = 32
     }
 
     preload() {
         this.load.spritesheet('guy', 'src/assets/guy.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image("tiles", "src/assets/tileset.png");
         this.load.tilemapTiledJSON('tilemap', 'src/assets/tileset.json')
-        
+        this.load.image("powerup", "src/assets/powerup.png")
+        this.load.image("boulder", "src/assets/boulder.png")
     };
     
     create() {
@@ -33,7 +37,16 @@ export class SceneMain extends Phaser.Scene {
         const dirt = map.createLayer('dirt', tileset);
         const blocks = map.createLayer('blocks', tileset);
         map.setCollisionBetween(461,461);
-        const boulders = map.createLayer('boulders', tileset);
+
+        for(let location of this.boulderLocations) {
+            this.boulders.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'boulder').setOrigin(0,0)
+            console.log(this.boulders.children)
+        }
+
+
+
+        
+        
 
 
         this.player = this.physics.add.sprite(32, 32, 'guy').setOrigin(0, 0);
@@ -44,7 +57,7 @@ export class SceneMain extends Phaser.Scene {
 
         this.moveTimer = 0;
         this.movementPossible = false;
-        //this.cameras.main.centerOn(800, 1300);
+        
     
     
         // creates up/down/left/right inputs
