@@ -40,7 +40,6 @@ export class SceneMain extends Phaser.Scene {
 
         for(let location of this.boulderLocations) {
             this.boulders.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'boulder').setOrigin(0,0)
-            console.log(this.boulders.children)
         }
 
 
