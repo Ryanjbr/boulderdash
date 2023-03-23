@@ -4,6 +4,8 @@ export class SceneMain extends Phaser.Scene {
     }
 
     init() {
+        this.score = 0;
+        this.scoreText;
         this.moveTimer = 0;
         this.movementPossible = false;
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -11,8 +13,10 @@ export class SceneMain extends Phaser.Scene {
         this.text = this.add.text(10,10, 'debug');
         this.moveType = '';
         this.goalReached = true;
-        this.boulders = this.physics.add.group()
+        this.boulders = this.physics.add.group();
+        this.pointups = this.physics.add.group();
         this.boulderLocations = [[4,17], [4,16], [8,5], [8,15]]
+        this.pointupLocations = [[2,9],[5,2],[9,10],[14,4],[18,8],[23,6],[24,16],[20,17],[16,18],[10,17],[6,14]]
         this.GRID_SIZE = 32
     }
 
@@ -20,7 +24,7 @@ export class SceneMain extends Phaser.Scene {
         this.load.spritesheet('guy', 'src/assets/guy.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image("tiles", "src/assets/tileset.png");
         this.load.tilemapTiledJSON('tilemap', 'src/assets/tileset.json')
-        this.load.image("powerup", "src/assets/powerup.png")
+        this.load.image("pointup", "src/assets/pointup.png")
         this.load.image("boulder", "src/assets/boulder.png")
     };
     
@@ -38,9 +42,16 @@ export class SceneMain extends Phaser.Scene {
         const blocks = map.createLayer('blocks', tileset);
         map.setCollisionBetween(461,461);
 
+        this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
+
         for(let location of this.boulderLocations) {
             this.boulders.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'boulder').setOrigin(0,0)
         }
+
+        for (let location of this.pointupLocations) {
+            this.pointups.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'pointup').setOrigin(0,0)
+        }
+
 
 
 
@@ -50,8 +61,10 @@ export class SceneMain extends Phaser.Scene {
 
         this.player = this.physics.add.sprite(32, 32, 'guy').setOrigin(0, 0);
         this.player.setScale(.5);
+        this.physics.add.collider(this.player,this.boulders);
 
         this.physics.add.collider(this.player, blocks)
+        this.physics.add.overlap(this.player, this.pointups, this.collectPointup, this.trueOverlap, this)
 
 
         this.moveTimer = 0;
@@ -77,6 +90,7 @@ export class SceneMain extends Phaser.Scene {
             velocity: ${this.player.body.velocity},
             lastPlayerX: ${this.lastPlayerX},
         `); */
+
         this.player.anims.play('idle', true)
         if (this.moveType === 'left' && this.player.body.x <= this.goalPos || this.moveType === 'right' && this.player.body.x >= this.goalPos) {
             this.player.body.setVelocity(0);
@@ -173,10 +187,20 @@ export class SceneMain extends Phaser.Scene {
         }
     };
 
-    movePlayer(direction, currentPlayerX, currentPlayerY) {
-        if (direction === "left") {
+    collectPointup(player,pointup) {
+        pointup.disableBody(true, true);
 
-        }
+        //  Add and update the score
+        this.score += 10;
+        this.scoreText.setText('Score: ' + this.score);
+    }
+    trueOverlap(objectA,objectB) {
+        const xDiff = objectA.body.x - objectB.body.x;
+        const yDiff = objectA.body.y - objectB.body.y;
+        if (xDiff > -5 && xDiff < 5 && yDiff > -5 && yDiff < 5) {
+            return true;
+        };
+        return false;
     }
 }
 export default SceneMain;
