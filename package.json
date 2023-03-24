@@ -33,7 +33,9 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
+    "csv": "^6.2.8",
     "grid-engine": "^2.27.1",
-    "phaser": "^3.50.0"
+    "phaser": "^3.50.0",
+    "phaser3-rex-plugins": "^1.1.83"
   }
 }
