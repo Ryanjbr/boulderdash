@@ -286,7 +286,7 @@ export class SceneMain extends Phaser.Scene {
         powerup.disableBody(true, true);
 
         //  Add and update the score
-        this.score += 10;
+        this.score += 1;
         this.scoreText.setText('Score: ' + this.score);
 
     }
