@@ -20,8 +20,7 @@ export class SceneMain extends Phaser.Scene {
         this.dirt = this.physics.add.group();
         this.markedDirt = this.physics.add.group();
         this.exit = this.physics.add.group();
-/*         this.boulderLocations = [[4,17], [4,16], [8,5], [8,15]]
-        this.pointupLocations = [[2,9],[5,2],[9,10],[14,4],[18,8],[23,6],[24,16],[20,17],[16,18],[10,17],[6,14]] */
+        this.exitOpen = false;
         this.GRID_SIZE = 32
 
     }
@@ -279,6 +278,10 @@ export class SceneMain extends Phaser.Scene {
             this.moveType = 'down'
             this.movementPossible = false;
             this.goalReached = false;
+        }
+
+        if (this.score > 10) {
+            this.exitOpen = true;
         }
     };
 
