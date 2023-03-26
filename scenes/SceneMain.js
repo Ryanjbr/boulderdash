@@ -9,6 +9,7 @@ export class SceneMain extends Phaser.Scene {
         this.moveTimer = 0;
         this.stuckTimer = 0;
         this.movementPossible = false;
+        this.blockPositions = [];
         this.cursors = this.input.keyboard.createCursorKeys();
         this.goalPos = 0;
         this.text = this.add.text(10,10, 'debug');
@@ -51,6 +52,13 @@ export class SceneMain extends Phaser.Scene {
         
         const ground = map.createLayer('ground', tileset);
         const blocks = map.createStaticLayer('blocks', tileset);
+        map.setLayer('blocks');
+        map.forEachTile((e) => {
+            console.log(e.index);
+            if (e.index == 289) {
+                this.blockPositions.push({'x': e.pixelX, 'y': e.pixelY})
+            }
+        })
         blocks.setCollisionByExclusion([-1]);
 
 
@@ -164,7 +172,6 @@ export class SceneMain extends Phaser.Scene {
         for (let dirt of this.dirt.getChildren()) {
             if (dirt.getData('marked') == true) {
                 if (this.trueOverlap(dirt, this.player) == false) {
-                    dirt.setData('marked', false) 
                     dirt.destroy()
                     this.checkBoulderCollision()
                 }
@@ -331,9 +338,15 @@ export class SceneMain extends Phaser.Scene {
                     found = true;
                 }
             }
+            console.log(this.blockPositions)
+            for (let position of this.blockPositions) {
+                if (boulder.body.x == position['x'] && boulder.body.y == position['y'] -32) {
+                    objectUnder = true;
+                }
+            }
             if (objectUnder == false) {
-                console.log('hi')
                 boulder.body.y += 32;
+                this.checkBoulderCollision();
             }
         }
     }
