@@ -50,8 +50,9 @@ export class SceneMain extends Phaser.Scene {
         const powerup = map.addTilesetImage('powerup', 'powerup');
         
         const ground = map.createLayer('ground', tileset);
-        const blocks = map.createLayer('blocks', tileset);
-        map.setCollisionBetween(461,462);
+        const blocks = map.createStaticLayer('blocks', tileset);
+        blocks.setCollisionByExclusion([-1]);
+
 
         const bouldersLayer = map.createLayer('boulders', boulder);
         map.setLayer('boulder');
@@ -60,6 +61,9 @@ export class SceneMain extends Phaser.Scene {
                 this.boulders.create(e.pixelX,e.pixelY,'boulder').setOrigin(0,0)
             } 
         })
+        for (let boulder of this.boulders.getChildren()) {
+            boulder.body.pushable = false;
+        }
         bouldersLayer.setVisible(false)
         const dirtLayer = map.createLayer('dirt', dirt)
         map.setLayer('dirt');
@@ -109,11 +113,11 @@ export class SceneMain extends Phaser.Scene {
 
         this.player = this.physics.add.sprite(32, 32, 'guy').setOrigin(0, 0);
         this.player.setScale(.5);
-
-/*         this.physics.add.collider(this.player,this.boulders);
-
-        this.physics.add.collider(this.player, blocks) */
+        this.physics.add.collider(this.player,this.boulders);
+        this.physics.add.collider(this.boulders,this.boulders);
         this.physics.add.overlap(this.player,this.powerups,this.collectPowerup,this.trueOverlap,this);
+        this.physics.add.collider(this.boulders,blocks);
+        this.physics.add.collider(this.player, blocks);
 
         this.physics.add.overlap(this.player,this.dirt,this.markDirt,this.trueOverlap,this)
 
@@ -159,10 +163,10 @@ export class SceneMain extends Phaser.Scene {
 
         for (let dirt of this.dirt.getChildren()) {
             if (dirt.getData('marked') == true) {
-                console.log('hi')
                 if (this.trueOverlap(dirt, this.player) == false) {
-                    console.log('hi2')
-                    dirt.disableBody(true, true)
+                    dirt.setData('marked', false) 
+                    dirt.destroy()
+                    this.checkBoulderCollision()
                 }
             }
         }
@@ -303,6 +307,35 @@ export class SceneMain extends Phaser.Scene {
     }
     markDirt(player,dirt) {
         dirt.setData('marked', true)
+    }
+
+    checkObjectUnder(objectA, objectB) {
+        if (objectA.x === objectB.x && objectA.y === objectB.y - 32) {
+            return true;
+        }
+    }
+    
+    checkBoulderCollision() {
+        var found = false;
+        for (let boulder of this.boulders.getChildren()) {
+            const objectUnder = false;
+            for (let dirt of this.dirt.getChildren()) {
+                if (this.checkObjectUnder(boulder,dirt)) {
+                    objectUnder = true;
+                    found = true;
+                }
+            }
+            for (let otherBoulder of this.boulders.getChildren()) {
+                if (this.checkObjectUnder(boulder, otherBoulder)) {
+                    objectUnder = true;
+                    found = true;
+                }
+            }
+            if (objectUnder == false) {
+                console.log('hi')
+                boulder.body.y += 32;
+            }
+        }
     }
 }
 export default SceneMain;
