@@ -33,7 +33,14 @@ export class SceneMain extends Phaser.Scene {
     preload() {
         this.load.spritesheet('guy', 'src/assets/guy.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image("tiles", "src/assets/tileset.png");
-        this.load.tilemapTiledJSON('tilemap', 'src/assets/level1tilemap.json')
+        if (this.level == 1) {
+            console.log('level 1 map')
+            this.load.tilemapTiledJSON('tilemap1', 'src/assets/level1tilemap.json')
+        }
+        else if (this.level == 2) {
+            console.log('level 2 map')
+            this.load.tilemapTiledJSON('tilemap2', 'src/assets/level2tilemap.json')
+        }
         this.load.image("powerup", "src/assets/pointup.png")
         this.load.image("boulder", "src/assets/boulder.png")
         this.load.image("dirt", "src/assets/dirt.png");
@@ -49,8 +56,12 @@ export class SceneMain extends Phaser.Scene {
         // setOrigin is necessary to render from top-left corner of image, otherwise
         // set to render with coordinates from center by default
         
-
-        const map = this.make.tilemap({ key: 'tilemap'});
+        if (this.level == 1) {
+            var map = this.make.tilemap({ key: 'tilemap1'});
+        }
+        else if (this.level == 2) {
+            var map = this.make.tilemap({ key: 'tilemap2'});
+        }
         const tileset = map.addTilesetImage('tileset', 'tiles');
         const boulder = map.addTilesetImage('boulder', 'boulder');
         const dirt = map.addTilesetImage('dirt', 'dirt');
@@ -60,7 +71,6 @@ export class SceneMain extends Phaser.Scene {
         const blocks = map.createStaticLayer('blocks', tileset);
         map.setLayer('blocks');
         map.forEachTile((e) => {
-            console.log(e.index);
             if (e.index == 289) {
                 this.blockPositions.push({'x': e.pixelX, 'y': e.pixelY})
             }
@@ -124,8 +134,12 @@ export class SceneMain extends Phaser.Scene {
         
         
 
-
-        this.player = this.physics.add.sprite(32, 32, 'guy').setOrigin(0, 0);
+        if (this.level == 1) {
+            this.player = this.physics.add.sprite(32, 32, 'guy').setOrigin(0, 0);
+        }
+        else if (this.level == 2) {
+            this.player = this.physics.add.sprite(736, 64, 'guy').setOrigin(0, 0);
+        }
         this.player.setScale(.5);
         this.physics.add.collider(this.player,this.boulders);
         this.physics.add.collider(this.boulders,this.boulders);
@@ -349,7 +363,6 @@ export class SceneMain extends Phaser.Scene {
             for (let dirt of this.dirt.getChildren()) {
                 if (this.checkObjectUnder(boulder,dirt)) {
                     if (boulder.getData('marked') == true) {
-                        console.log('dirt under found')
                     }
                     objectUnder = true;
                 }
@@ -357,7 +370,6 @@ export class SceneMain extends Phaser.Scene {
             for (let otherBoulder of boulders) {
                 if (this.checkObjectUnder(boulder, otherBoulder)) {
                     if (boulder.getData('marked') == true) {
-                        console.log('boulder under found')
                     }
                     objectUnder = true;
                 }
@@ -365,7 +377,6 @@ export class SceneMain extends Phaser.Scene {
             for (let position of this.blockPositions) {
                 if (boulder.body.x == position['x'] && boulder.body.y == position['y'] -32) {
                     if (boulder.getData('marked') == true) {
-                        console.log('block under found')
                     }                    
                     objectUnder = true;
                 }
