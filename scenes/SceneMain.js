@@ -7,6 +7,7 @@ export class SceneMain extends Phaser.Scene {
         this.score = 0;
         this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
         this.moveTimer = 0;
+        this.gameOver = false;
         this.stuckTimer = 0;
         this.movementPossible = false;
         this.blockPositions = [];
@@ -90,15 +91,6 @@ export class SceneMain extends Phaser.Scene {
             } 
         })
         powerupLayer.setVisible(false)
-/*         this.powerupsArray = map.getTilesWithin(0,0,25,19,null,'powerup')
-        for (let powerup of this.powerupsArray) {
-            this.powerups.create(powerup.pixelX,powerup.pixelY,'powerup')
-        } */
-/*         for (let powerup of this.powerups) {
-            this.pointups.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'pointup').setOrigin(0,0)
-
-        } */
-
         
         
 
@@ -172,8 +164,10 @@ export class SceneMain extends Phaser.Scene {
         for (let dirt of this.dirt.getChildren()) {
             if (dirt.getData('marked') == true) {
                 if (this.trueOverlap(dirt, this.player) == false) {
-                    dirt.destroy()
-                    this.checkBoulderCollision()
+                    const boulderArray = this.boulders.getChildren().filter(boulder => boulder.body.x == dirt.body.x).filter(boulder => boulder.body.y == dirt.body.y - 32);
+                    dirt.destroy();
+                    this.checkBoulderCollision(boulderArray);
+
                 }
             }
         }
@@ -210,7 +204,7 @@ export class SceneMain extends Phaser.Scene {
             this.goalPos = 0;
             this.goalReached = true;
         }
-        if (this.moveType === 'left' && this.stuckTimer > 500) {
+        if (this.moveType === 'left' && this.stuckTimer > 300) {
             this.player.body.setVelocity(0);
             this.player.body.x = this.goalPos + 32;
             this.movementPossible = true;
@@ -219,7 +213,7 @@ export class SceneMain extends Phaser.Scene {
             this.goalPos = 0;
             this.goalReached = true;
         }
-        if (this.moveType === 'right' && this.stuckTimer > 800) {
+        if (this.moveType === 'right' && this.stuckTimer > 300) {
             this.player.body.setVelocity(0);
             this.player.body.x = this.goalPos - 32;
             this.movementPossible = true;
@@ -228,7 +222,7 @@ export class SceneMain extends Phaser.Scene {
             this.goalPos = 0;
             this.goalReached = true;
         }
-        if (this.moveType === 'up' && this.stuckTimer > 800) {
+        if (this.moveType === 'up' && this.stuckTimer > 300) {
             this.player.body.setVelocity(0);
             this.player.body.y = this.goalPos + 32;
             this.movementPossible = true;
@@ -237,7 +231,7 @@ export class SceneMain extends Phaser.Scene {
             this.goalPos = 0;
             this.goalReached = true;
         }
-        if (this.moveType === 'down' && this.stuckTimer > 800) {
+        if (this.moveType === 'down' && this.stuckTimer > 300) {
             this.player.body.setVelocity(0);
             this.player.body.y = this.goalPos - 32;
             this.movementPossible = true;
@@ -250,7 +244,7 @@ export class SceneMain extends Phaser.Scene {
     
         this.moveTimer += delta;
         this.stuckTimer += delta;
-        if (this.moveTimer > 400 && this.goalReached === true) {
+        if (this.moveTimer > 100 && this.goalReached === true) {
             this.movementPossible = true;
         }
     
@@ -317,38 +311,58 @@ export class SceneMain extends Phaser.Scene {
     }
 
     checkObjectUnder(objectA, objectB) {
-        if (objectA.x === objectB.x && objectA.y === objectB.y - 32) {
+        if (objectA.body.x === objectB.body.x && objectA.body.y === objectB.body.y - 32) {
             return true;
         }
+        return false;
     }
     
-    checkBoulderCollision() {
-        var found = false;
-        for (let boulder of this.boulders.getChildren()) {
-            const objectUnder = false;
+    checkBoulderCollision(boulders) {
+        for (let boulder of boulders) {
+            var bouldersToCheck = [];
+            var objectUnder = false;
+            if (this.player.body.x == boulder.body.x && this.player.body.y <= boulder.body.y + 32 && this.player.body.y > boulder.body.y) {
+                this.hitBoulder()
+                return;
+            }
             for (let dirt of this.dirt.getChildren()) {
                 if (this.checkObjectUnder(boulder,dirt)) {
+                    if (boulder.getData('marked') == true) {
+                        console.log('dirt under found')
+                    }
                     objectUnder = true;
-                    found = true;
                 }
             }
-            for (let otherBoulder of this.boulders.getChildren()) {
+            for (let otherBoulder of boulders) {
                 if (this.checkObjectUnder(boulder, otherBoulder)) {
+                    if (boulder.getData('marked') == true) {
+                        console.log('boulder under found')
+                    }
                     objectUnder = true;
-                    found = true;
                 }
             }
-            console.log(this.blockPositions)
             for (let position of this.blockPositions) {
                 if (boulder.body.x == position['x'] && boulder.body.y == position['y'] -32) {
+                    if (boulder.getData('marked') == true) {
+                        console.log('block under found')
+                    }                    
                     objectUnder = true;
                 }
             }
             if (objectUnder == false) {
+                const boulderArray = this.boulders.getChildren().filter(bould => bould.body.x == boulder.body.x);
                 boulder.body.y += 32;
-                this.checkBoulderCollision();
+                this.checkBoulderCollision(boulderArray);
             }
         }
     }
+    
+    hitBoulder() {
+        this.physics.pause()
+        this.player.setTint(0xff0000);
+        this.gameOver = true;
+    }
+
+
 }
 export default SceneMain;
