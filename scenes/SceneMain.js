@@ -3,8 +3,9 @@ export class SceneMain extends Phaser.Scene {
         super("SceneMain");
     }
 
-    init() {
-        this.score = 9;
+    init(data) {
+        this.level = data.level;
+        this.score = 0;
         this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
         this.moveTimer = 0;
         this.gameOver = false;
@@ -13,7 +14,6 @@ export class SceneMain extends Phaser.Scene {
         this.blockPositions = [];
         this.cursors = this.input.keyboard.createCursorKeys();
         this.goalPos = 0;
-        this.text = this.add.text(10,10, 'debug');
         this.moveType = '';
         this.goalReached = true;
         this.boulders = this.physics.add.group();
@@ -49,7 +49,6 @@ export class SceneMain extends Phaser.Scene {
         // setOrigin is necessary to render from top-left corner of image, otherwise
         // set to render with coordinates from center by default
         
-
 
         const map = this.make.tilemap({ key: 'tilemap'});
         const tileset = map.addTilesetImage('tileset', 'tiles');
@@ -108,6 +107,8 @@ export class SceneMain extends Phaser.Scene {
         
 
         this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
+        this.add.text(500,10,'Level:' + this.level)
+
 
 /*         for(let location of this.boulderLocations) {
             this.boulders.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'boulder').setOrigin(0,0)
@@ -385,7 +386,12 @@ export class SceneMain extends Phaser.Scene {
 
     winGame() {
         this.physics.pause();
-        const winText = this.add.text(200,10,'You win!')
+        if (this.level == 2) {
+            const winText = this.add.text(300,10,'You win!')
+        }
+        else {
+            this.scene.start('SceneMain', {level: this.level + 1})
+        }
     }
 }
 export default SceneMain;
