@@ -4,7 +4,7 @@ export class SceneMain extends Phaser.Scene {
     }
 
     init() {
-        this.score = 0;
+        this.score = 9;
         this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
         this.moveTimer = 0;
         this.gameOver = false;
@@ -21,7 +21,10 @@ export class SceneMain extends Phaser.Scene {
         this.powerups = this.physics.add.group();
         this.dirt = this.physics.add.group();
         this.markedDirt = this.physics.add.group();
-        this.exit = this.physics.add.group();
+        this.closedExit = this.physics.add.staticGroup();
+        this.singleClosedExit;
+        this.openExit = this.physics.add.group();
+        this.singleOpenExit;
         this.exitOpen = false;
         this.GRID_SIZE = 32
 
@@ -34,6 +37,9 @@ export class SceneMain extends Phaser.Scene {
         this.load.image("powerup", "src/assets/pointup.png")
         this.load.image("boulder", "src/assets/boulder.png")
         this.load.image("dirt", "src/assets/dirt.png");
+        this.load.image("exitopen", "src/assets/exitopen.png");
+        this.load.image("exitclosed", "src/assets/exitclosed.png")
+
     };
     
     create() {
@@ -83,6 +89,13 @@ export class SceneMain extends Phaser.Scene {
         })
         dirtLayer.setVisible(false)
         const exit = map.createLayer('exit', tileset)
+        map.setLayer('exit');
+        map.forEachTile((e) => {
+            if (e.index == '285') {
+                this.singleClosedExit = this.closedExit.create(e.pixelX,e.pixelY,'exitclosed').setOrigin(0,0);
+            }
+        })
+        exit.setVisible(false);
         const powerupLayer = map.createLayer('powerup', 'powerup')
         map.setLayer('powerup');
         map.forEachTile((e) => {
@@ -115,6 +128,8 @@ export class SceneMain extends Phaser.Scene {
         this.player.setScale(.5);
         this.physics.add.collider(this.player,this.boulders);
         this.physics.add.collider(this.boulders,this.boulders);
+        this.physics.add.collider(this.player,this.closedExit);
+        this.physics.add.overlap(this.player,this.openExit,this.winGame,this.trueOverlap,this);
         this.physics.add.overlap(this.player,this.powerups,this.collectPowerup,this.trueOverlap,this);
         this.physics.add.collider(this.boulders,blocks);
         this.physics.add.collider(this.player, blocks);
@@ -160,6 +175,15 @@ export class SceneMain extends Phaser.Scene {
     };
     
     update(time, delta) {
+
+        if (this.score == 10 && this.exitOpen == false) {
+            this.singleOpenExit = this.openExit.create(this.singleClosedExit.body.x + 16, this.singleClosedExit.body.y + 16, 'exitopen').setOrigin(0,0);
+            this.singleClosedExit.disableBody();
+            this.exitOpen = true;
+        }
+
+
+
 
         for (let dirt of this.dirt.getChildren()) {
             if (dirt.getData('marked') == true) {
@@ -284,10 +308,6 @@ export class SceneMain extends Phaser.Scene {
             this.movementPossible = false;
             this.goalReached = false;
         }
-
-        if (this.score > 10) {
-            this.exitOpen = true;
-        }
     };
 
     collectPowerup(player,powerup) {
@@ -363,6 +383,9 @@ export class SceneMain extends Phaser.Scene {
         this.gameOver = true;
     }
 
-
+    winGame() {
+        this.physics.pause();
+        const winText = this.add.text(200,10,'You win!')
+    }
 }
 export default SceneMain;
