@@ -4,6 +4,11 @@ export class SceneMain extends Phaser.Scene {
     }
 
     init(data) {
+        this.exitOpenSound;
+        this.deathSound;
+        this.powerupSound;
+        this.dirtSound;
+        this.music;
         this.level = data.level;
         this.score = 0;
         this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
@@ -46,7 +51,11 @@ export class SceneMain extends Phaser.Scene {
         this.load.image("dirt", "src/assets/dirt.png");
         this.load.image("exitopen", "src/assets/exitopen.png");
         this.load.image("exitclosed", "src/assets/exitclosed.png")
-
+        this.load.audio('theme', 'src/assets/music.mp3');
+        this.load.audio('exitopensound', 'src/assets/exitopen.wav');
+        this.load.audio('powerup', 'src/assets/powerup.wav');
+        this.load.audio('death', 'src/assets/death.wav');
+        this.load.audio('dirt', 'src/assets/dirt.wav');
     };
     
     create() {
@@ -55,7 +64,15 @@ export class SceneMain extends Phaser.Scene {
     
         // setOrigin is necessary to render from top-left corner of image, otherwise
         // set to render with coordinates from center by default
-        
+        this.music = this.sound.add('theme');
+        this.music.play();
+        this.music.loop = true;
+
+        this.exitOpenSound = this.sound.add('exitopensound');
+        this.deathSound = this.sound.add('death');
+        this.powerupSound = this.sound.add('powerup');
+        this.dirtSound = this.sound.add('dirt')
+
         if (this.level == 1) {
             var map = this.make.tilemap({ key: 'tilemap1'});
         }
@@ -190,10 +207,18 @@ export class SceneMain extends Phaser.Scene {
     };
     
     update(time, delta) {
+        var enter = this.input.keyboard.addKey('enter');  // Get key object
+
+
+        if (this.gameOver = true && enter.isDown) {
+            this.music.stop();
+            this.scene.start('SceneMain', {level: 1})
+        }
 
         if (this.score == 10 && this.exitOpen == false) {
             this.singleOpenExit = this.openExit.create(this.singleClosedExit.body.x + 16, this.singleClosedExit.body.y + 16, 'exitopen').setOrigin(0,0);
             this.singleClosedExit.disableBody();
+            this.exitOpenSound.play();
             this.exitOpen = true;
         }
 
@@ -205,6 +230,7 @@ export class SceneMain extends Phaser.Scene {
                 if (this.trueOverlap(dirt, this.player) == false) {
                     const boulderArray = this.boulders.getChildren().filter(boulder => boulder.body.x == dirt.body.x).filter(boulder => boulder.body.y == dirt.body.y - 32);
                     dirt.destroy();
+                    this.dirtSound.play();
                     this.checkBoulderCollision(boulderArray);
 
                 }
@@ -327,6 +353,7 @@ export class SceneMain extends Phaser.Scene {
 
     collectPowerup(player,powerup) {
         powerup.disableBody(true, true);
+        this.powerupSound.play();
 
         //  Add and update the score
         this.score += 1;
@@ -390,6 +417,7 @@ export class SceneMain extends Phaser.Scene {
     }
     
     hitBoulder() {
+        this.deathSound.play();
         this.physics.pause()
         this.player.setTint(0xff0000);
         this.gameOver = true;
@@ -401,6 +429,7 @@ export class SceneMain extends Phaser.Scene {
             const winText = this.add.text(300,10,'You win!')
         }
         else {
+            this.music.stop();
             this.scene.start('SceneMain', {level: this.level + 1})
         }
     }
