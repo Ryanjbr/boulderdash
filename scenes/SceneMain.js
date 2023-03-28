@@ -38,6 +38,7 @@ export class SceneMain extends Phaser.Scene {
     preload() {
         this.load.spritesheet('guy', 'src/assets/guy.png', { frameWidth: 64, frameHeight: 64 });
         this.load.image("tiles", "src/assets/tileset.png");
+        // tilemaps composed using "tiled" software
         if (this.level == 1) {
             console.log('level 1 map')
             this.load.tilemapTiledJSON('tilemap1', 'src/assets/level1tilemap.json')
@@ -59,11 +60,6 @@ export class SceneMain extends Phaser.Scene {
     };
     
     create() {
-    //    this.objects.camera = this.cameras.add(0, 0, 400, 300);
-    //    this.objects.camera.setBackgroundColor('rgb(0, 0, 0)');
-    
-        // setOrigin is necessary to render from top-left corner of image, otherwise
-        // set to render with coordinates from center by default
         this.music = this.sound.add('theme');
         this.music.play();
         this.music.loop = true;
@@ -85,6 +81,8 @@ export class SceneMain extends Phaser.Scene {
         const powerup = map.addTilesetImage('powerup', 'powerup');
         
         const ground = map.createLayer('ground', tileset);
+
+        // tile layers have to be replaced by sprites for grid physics to work
         const blocks = map.createStaticLayer('blocks', tileset);
         map.setLayer('blocks');
         map.forEachTile((e) => {
@@ -137,20 +135,7 @@ export class SceneMain extends Phaser.Scene {
         this.add.text(500,10,'Level:' + this.level)
 
 
-/*         for(let location of this.boulderLocations) {
-            this.boulders.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'boulder').setOrigin(0,0)
-        }
-
-        for (let location of this.pointupLocations) {
-            this.pointups.create(location[0]*this.GRID_SIZE-this.GRID_SIZE,location[1]*this.GRID_SIZE-this.GRID_SIZE, 'pointup').setOrigin(0,0)
-        }
- */
-
-
-
         
-        
-
         if (this.level == 1) {
             this.player = this.physics.add.sprite(32, 32, 'guy').setOrigin(0, 0);
         }
@@ -174,7 +159,7 @@ export class SceneMain extends Phaser.Scene {
         
     
     
-        // creates up/down/left/right inputs
+        // creates animations
     
         this.anims.create({
             key: 'idle',
@@ -224,7 +209,7 @@ export class SceneMain extends Phaser.Scene {
 
 
 
-
+        // walking over dirt
         for (let dirt of this.dirt.getChildren()) {
             if (dirt.getData('marked') == true) {
                 if (this.trueOverlap(dirt, this.player) == false) {
@@ -236,6 +221,8 @@ export class SceneMain extends Phaser.Scene {
                 }
             }
         }
+
+        // player movement
         if (this.moveType === 'left') {
             this.player.anims.play('left', true);
         }
@@ -381,7 +368,6 @@ export class SceneMain extends Phaser.Scene {
     
     checkBoulderCollision(boulders) {
         for (let boulder of boulders) {
-            var bouldersToCheck = [];
             var objectUnder = false;
             if (this.player.body.x == boulder.body.x && this.player.body.y <= boulder.body.y + 32 && this.player.body.y > boulder.body.y) {
                 this.hitBoulder()
