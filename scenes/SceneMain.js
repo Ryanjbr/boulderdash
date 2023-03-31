@@ -4,16 +4,15 @@ export class SceneMain extends Phaser.Scene {
     }
 
     init(data) {
-        this.enemy1;
-        this.enemy2;
-        this.enemy3;
+        this.blocks = this.physics.add.group();
+        this.first = true;
         this.exitOpenSound;
         this.deathSound;
         this.powerupSound;
         this.dirtSound;
         this.music;
         this.level = data.level;
-        this.score = 0;
+        this.score = 10;
         this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
         this.moveTimer = 0;
         this.gameOver = false;
@@ -96,8 +95,9 @@ export class SceneMain extends Phaser.Scene {
         const blocks = map.createStaticLayer('blocks', tileset);
         map.setLayer('blocks');
         map.forEachTile((e) => {
-            if (e.index == 289) {
+            if (e.index == 289 || e.index == 673) {
                 this.blockPositions.push({'x': e.pixelX, 'y': e.pixelY})
+                this.blocks.create(e.pixelX,e.pixelY,null).setOrigin(0,0).alpha = 0;
             }
         })
         blocks.setCollisionByExclusion([-1]);
@@ -178,12 +178,19 @@ export class SceneMain extends Phaser.Scene {
         }
         this.player.setScale(.5);
         if (this.level == 1 || this.level == 2) {
-            this.physics.add.collider(this.enemy1,blocks,this.turnAround)
-            this.physics.add.collider(this.enemy2,blocks,this.turnAround)
-            this.physics.add.collider(this.enemy3,blocks,this.turnAround)
-/*             this.physics.add.overlap(this.enemy1,this.dirt,this.turnAround)
+            this.physics.add.overlap(this.enemy1,this.blocks,this.turnAround,null,this)
+            this.physics.add.overlap(this.enemy2,this.blocks,this.turnAround)
+            this.physics.add.overlap(this.enemy3,this.blocks,this.turnAround)
+            this.physics.add.overlap(this.enemy1,this.dirt,this.turnAround)
             this.physics.add.overlap(this.enemy2,this.dirt,this.turnAround)
-            this.physics.add.overlap(this.enemy3,this.dirt,this.turnAround) */
+            this.physics.add.overlap(this.enemy3,this.dirt,this.turnAround)
+            this.physics.add.overlap(this.enemy1,this.boulders,this.turnAround)
+            this.physics.add.overlap(this.enemy2,this.boulders,this.turnAround)
+            this.physics.add.overlap(this.enemy3,this.boulders,this.turnAround)
+            this.physics.add.overlap(this.enemy1,this.player,this.hitBoulder,null,this)
+            this.physics.add.overlap(this.enemy2,this.player,this.hitBoulder,null,this)
+            this.physics.add.overlap(this.enemy3,this.player,this.hitBoulder,null,this)
+
 
         }
         this.physics.add.collider(this.player,this.boulders);
@@ -247,16 +254,21 @@ export class SceneMain extends Phaser.Scene {
             frameRate: 60
         })
 
+
+
     };
     
     update(time, delta) {
-        if (this.level == 1 || this.level == 2) {
-            this.enemy1.setVelocityX(200);
+        if ((this.level == 1 || this.level == 2) && this.first == true) {
+            console.log('velocity')
+            this.enemy1.body.setVelocityX(40);
+            console.log(this.enemy1.body.velocity.x)
             this.enemy1.anims.play('blobmove', true);
-            this.enemy2.setVelocityY(200);
+            this.enemy2.body.setVelocityY(40);
             this.enemy2.anims.play('blobmove', true);
-            this.enemy3.setVelocityX(200);
+            this.enemy3.body.setVelocityX(40);
             this.enemy3.anims.play('blobmove', true);
+            this.first = false;
         } 
         var enter = this.input.keyboard.addKey('enter');  // Get key object
 
@@ -469,10 +481,15 @@ export class SceneMain extends Phaser.Scene {
     }
 
     turnAround(sprite,otherObject) {
-        sprite.body.checkCollision.none = true;
-        sprite.body.velocity.x = -sprite.body.velocity.x;
-        sprite.body.velocity.y = -sprite.body.velocity.y;
+        console.log(sprite.body.x)
+        console.log(sprite.body.velocity)
+        sprite.body.setVelocityX(-sprite.body.velocity.x);
+        sprite.body.setVelocityY(-sprite.body.velocity.y);
+/*         sprite.body.checkCollision.none = true;
+        setTimeout(() => {
         sprite.body.checkCollision.none = false;
+        }, 1000) */
+
 
 
     }
