@@ -4,6 +4,9 @@ export class SceneMain extends Phaser.Scene {
     }
 
     init(data) {
+        this.enemy1;
+        this.enemy2;
+        this.enemy3;
         this.exitOpenSound;
         this.deathSound;
         this.powerupSound;
@@ -57,6 +60,13 @@ export class SceneMain extends Phaser.Scene {
         this.load.audio('powerup', 'src/assets/powerup.wav');
         this.load.audio('death', 'src/assets/death.wav');
         this.load.audio('dirt', 'src/assets/dirt.wav');
+        this.load.image("blob_stand1", "src/assets/Blob/blob_stand1.png");
+        this.load.image("blob_stand2", "src/assets/Blob/blob_stand2.png");
+        this.load.image("blob_stand3", "src/assets/Blob/blob_stand3.png");
+        this.load.image("blob_jump1", "src/assets/Blob/blob_jump1.png");
+        this.load.image("blob_jump2", "src/assets/Blob/blob_jump2.png");
+        this.load.image("blob_jump3", "src/assets/Blob/blob_jump3.png");
+        this.load.image("blob_jump4", "src/assets/Blob/blob_jump4.png");
     };
     
     create() {
@@ -134,6 +144,30 @@ export class SceneMain extends Phaser.Scene {
         this.scoreText = this.add.text(10, 10, `Score: ${this.score}`);
         this.add.text(500,10,'Level:' + this.level)
 
+        if (this.level == 1) {
+            //horizontal movement
+            this.enemy1 = this.physics.add.sprite(384, 32, 'blob_stand1').setOrigin(0,0);
+            this.enemy1.setData('movement', 'horizontal');
+            //vertical movement
+            this.enemy2 = this.physics.add.sprite(448, 288, 'blob_stand1').setOrigin(0,0);
+            this.enemy2.setData('movement', 'vertical');
+            //horizontal movement
+            this.enemy3 = this.physics.add.sprite(32, 448, 'blob_stand1').setOrigin(0,0);
+            this.enemy3.setData('movement', 'horizontal');
+
+        }
+        else if (this.level == 2) {
+            //horizontal movement
+            this.enemy1 = this.physics.add.sprite(608, 544, 'blob_stand1').setOrigin(0,0);
+            this.enemy1.setData('movement', 'horizontal');
+            //vertical movement
+            this.enemy2 = this.physics.add.sprite(288, 32, 'blob_stand1').setOrigin(0,0);
+            this.enemy2.setData('movement', 'vertical');
+            //horizontal movement
+            this.enemy3 = this.physics.add.sprite(32, 128, 'blob_stand1').setOrigin(0,0);
+            this.enemy3.setData('movement', 'horizontal');
+        }
+
 
         
         if (this.level == 1) {
@@ -143,6 +177,15 @@ export class SceneMain extends Phaser.Scene {
             this.player = this.physics.add.sprite(736, 64, 'guy').setOrigin(0, 0);
         }
         this.player.setScale(.5);
+        if (this.level == 1 || this.level == 2) {
+            this.physics.add.collider(this.enemy1,blocks,this.turnAround)
+            this.physics.add.collider(this.enemy2,blocks,this.turnAround)
+            this.physics.add.collider(this.enemy3,blocks,this.turnAround)
+/*             this.physics.add.overlap(this.enemy1,this.dirt,this.turnAround)
+            this.physics.add.overlap(this.enemy2,this.dirt,this.turnAround)
+            this.physics.add.overlap(this.enemy3,this.dirt,this.turnAround) */
+
+        }
         this.physics.add.collider(this.player,this.boulders);
         this.physics.add.collider(this.boulders,this.boulders);
         this.physics.add.collider(this.player,this.closedExit);
@@ -160,6 +203,21 @@ export class SceneMain extends Phaser.Scene {
     
     
         // creates animations
+
+        const animation = this.anims.create({
+            key: "blobmove",
+            frames: [
+              { key: "blob_stand1" },
+              { key: "blob_stand2" },
+              { key: "blob_stand3" },
+              { key: "blob_jump1" },
+              { key: "blob_jump2" },
+              { key: "blob_jump3" },
+              { key: "blob_jump4" }
+            ],
+            frameRate: 10,
+            repeat: -1
+          });
     
         this.anims.create({
             key: 'idle',
@@ -192,6 +250,14 @@ export class SceneMain extends Phaser.Scene {
     };
     
     update(time, delta) {
+        if (this.level == 1 || this.level == 2) {
+            this.enemy1.setVelocityX(200);
+            this.enemy1.anims.play('blobmove', true);
+            this.enemy2.setVelocityY(200);
+            this.enemy2.anims.play('blobmove', true);
+            this.enemy3.setVelocityX(200);
+            this.enemy3.anims.play('blobmove', true);
+        } 
         var enter = this.input.keyboard.addKey('enter');  // Get key object
 
 
@@ -401,6 +467,16 @@ export class SceneMain extends Phaser.Scene {
             }
         }
     }
+
+    turnAround(sprite,otherObject) {
+        sprite.body.checkCollision.none = true;
+        sprite.body.velocity.x = -sprite.body.velocity.x;
+        sprite.body.velocity.y = -sprite.body.velocity.y;
+        sprite.body.checkCollision.none = false;
+
+
+    }
+
     
     hitBoulder() {
         this.deathSound.play();
